@@ -153,7 +153,7 @@ static const String:L4DResourceName[L4DResourceType][] =
  * @return				Current L4D1ZombieClassTypes of player.
  * @error				Invalid client index.
  */
-stock L4D1ZombieClassTypes:L4D1_GetPlayerZombieClas(client)
+stock L4D1ZombieClassTypes:L4D1_GetPlayerZombieClass(client)
 {
 	return L4D1ZombieClassType:GetEntProp(client, Prop_Send, "m_zombieClass");
 }
@@ -166,7 +166,7 @@ stock L4D1ZombieClassTypes:L4D1_GetPlayerZombieClas(client)
  * @noreturn
  * @error				Invalid client index.
  */
-stock L4D1_SetPlayerZombieClas(client, L4D1ZombieClassTypes:class)
+stock L4D1_SetPlayerZombieClass(client, L4D1ZombieClassTypes:class)
 {
 	SetEntProp(client, Prop_Send, "m_zombieClass", _:class);
 }
@@ -594,11 +594,11 @@ stock bool:L4D2_SetEntGlow(entity, L4D2GlowType:type, range, minRange, colorOver
 		return false;	
 	}
 
-	L4D2_SetEntityGlow_Type(entity, type);
-	L4D2_SetEntityGlow_Range(entity, range);
-	L4D2_SetEntityGlow_MinRange(entity, minRange);
-	L4D2_SetEntityGlow_ColorOverride(entity, colorOverride);
-	L4D2_SetEntityGlow_Flashing(entity, flashing);
+	L4D2_SetEntGlow_Type(entity, type);
+	L4D2_SetEntGlow_Range(entity, range);
+	L4D2_SetEntGlow_MinRange(entity, minRange);
+	L4D2_SetEntGlow_ColorOverride(entity, colorOverride);
+	L4D2_SetEntGlow_Flashing(entity, flashing);
 	return true;
 }
 
@@ -719,7 +719,8 @@ stock L4D_SetPlayerReviveCount(client, count)
 
 /**
  * Return player intensity.
- * @remarks Its percentage. 0.0 - Player is calm, 1.0 - Player is stressed.
+ *
+ * Note: Its percentage. 0.0 - Player is calm, 1.0 - Player is stressed.
  *
  * @param client		Client index.
  * @return				Intensity.
@@ -765,7 +766,8 @@ stock Float:L4D_GetAvgSurvivorIntensity()
 
 /**
  * Set player intensity.
- * @remarks Its percentage. 0.0 - Player is calm, 1.0 - Player is stressed.
+ *
+ * Note: Its percentage. 0.0 - Player is calm, 1.0 - Player is stressed.
  *
  * @param client		Client index.
  * @param intensity		Intensity.
@@ -779,7 +781,8 @@ stock L4D_SetPlayerIntensity(client, Float:intensity)
 
 /**
  * Returns whether player is calm.
- * @remarks Player is calm means that the player have not taken damage or
+ *
+ * Note: Player is calm means that the player have not taken damage or
  * fired their weapon for a while.
  *
  * @param client		Client index.
@@ -793,7 +796,8 @@ stock bool:L4D_IsPlayerCalm(client)
 
 /**
  * Set player is calm state.
- * @remarks Player is calm means that the player have not taken damage or
+ *
+ * Note: Player is calm means that the player have not taken damage or
  * fired their weapon for a while.
  *
  * @param client		Client index.
@@ -833,6 +837,7 @@ stock L4D_SetPlayerThirdStrikeState(client, bool:onThirdStrike)
 
 /**
  * Returns whether player is going to die.
+ *
  * Note: This is not the same as is player on third strike. While on third
  * strike defines whether player should die next time they get incapacitated,
  * this defines whether the survivor should limp when they hit 1hp and make
@@ -912,7 +917,8 @@ stock L4D2_SetWeaponUpgrades(weapon, upgrades)
 
 /**
  * Returns infected attacker of survivor victim.
- * @remarks Infected attacker means the infected player that is currently
+ *
+ * Note: Infected attacker means the infected player that is currently
  * pinning down the survivor. Such as hunter, smoker, charger and jockey.
  *
  * @param client		Survivor client index.
@@ -947,7 +953,8 @@ stock L4D2_GetInfectedAttacker(client)
 
 /**
  * Returns survivor victim of infected attacker.
- * @remarks Survivor victim means the survivor player that is currently pinned
+ *
+ * Note: Survivor victim means the survivor player that is currently pinned
  * down by an attacker. Such as hunter, smoker, charger and jockey.
  *
  * @param client		Infected client index.
@@ -1096,9 +1103,9 @@ stock L4D2_GetPlayerUseActionOwner(client)
 /**
  * Creates an instructor hint.
  *
- * @remarks Both infected and survivor players will see hint. No more than one
- * at a time can be shown. The "newest" hint will override the old no matter
- * the timeout and range. This instructor hint will not be shown if the given
+ * Note: Both infected and survivor players will see hint. No more than one at
+ * a time can be shown. The "newest" hint will override the old no matter the
+ * timeout and range. This instructor hint will not be shown if the given
  * player is dead.
  *
  * @param name			Instructor hint name.
