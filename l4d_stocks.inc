@@ -1029,7 +1029,7 @@ stock bool:L4D_IsPlayerUsingMountedWeapon(client)
  * Returns player temporarily health.
  *
  * @param client		Client index.
- * @return				Player's temporarily health.
+ * @return				Player's temporarily health, -1 if unable to get.
  * @error				Invalid client index or unable to find
  * 						pain_pills_decay_rate cvar.
  */
@@ -1041,8 +1041,7 @@ stock L4D_GetPlayerTempHealth(client)
 		painPillsDecayCvar = FindConVar("pain_pills_decay_rate");
 		if (painPillsDecayCvar == INVALID_HANDLE)
 		{
-			LogError("Unable to find pain pills decay rate cvar.");
-			SetFailState("Unable to find pain pills decay rate cvar.");
+			return -1;
 		}
 	}
 
@@ -1119,7 +1118,7 @@ stock L4D2_GetPlayerUseActionOwner(client)
  * @param range			Display range of hint. 0 for unlimited range.
  * @param timeout		Timeout out for hint. 0 will persist until stopped
  *						with L4D2_EndInstructorHint.
- * @noreturn
+ * @return				True if send, false otherwise.
  */
 stock L4D2_CreateInstructorHint(const String:name[], 
 								target = 0,
@@ -1139,8 +1138,7 @@ stock L4D2_CreateInstructorHint(const String:name[],
 	new Handle:event = CreateEvent("instructor_server_hint_create", true);
 	if (event == INVALID_HANDLE)
 	{
-		LogError("Unable to create instructor_server_hint_create event.");
-		return;
+		return false;
 	}
 
 	decl String:finalizedColor[16];
@@ -1161,23 +1159,24 @@ stock L4D2_CreateInstructorHint(const String:name[],
 	SetEventBool(event, "hint_forcecaption", forceCaption);
 	SetEventInt(event, "hint_flags", flags);
 	FireEvent(event);
+	return true;
 }
 
 /**
  * Stops all instructor hints with name.
  *
  * @param name			Name of instructor hint to stop.
- * @noreturn
+ * @return				True if send, false otherwise.
  */
-stock L4D2_StopInstructorHint(const String:name[])
+stock bool:L4D2_StopInstructorHint(const String:name[])
 {
 	new Handle:event = CreateEvent("instructor_server_hint_stop", true);
 	if (event == INVALID_HANDLE)
 	{
-		LogError("Unable to create instructor_server_hint_stop event.");
-		return;
+		return false;
 	}
 
 	SetEventString(event, "hint_name", name);
 	FireEvent(event);
+	return true;
 }
