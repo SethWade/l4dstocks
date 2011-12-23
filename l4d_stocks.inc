@@ -586,6 +586,8 @@ stock L4D_GetPendingTankPlayer()
  */
 stock bool:L4D2_SetEntGlow(entity, L4D2GlowType:type, range, minRange, colorOverride[3], bool:flashing)
 {
+    if (!IsValidEntity(entity)) return false;
+
     decl String:netclass[128];
     GetEntityNetClass(entity, netclass, 128);
 
@@ -669,26 +671,110 @@ stock L4D2_SetEntGlow_Flashing(entity, bool:flashing)
 }
 
 /**
- * Return player survivor glow state.
+ * Returns entity glow type.
+ *
+ * @param entity        Entity index.
+ * @return              L4D2 glow type.
+ * @error               Invalid entity index or entity does not support glow.
+ */
+stock L4D2GlowType:L4D2_GetEntGlow_Type(entity)
+{
+    return L4D2GlowType:GetEntProp(entity, Prop_Send, "m_iGlowType");
+}
+
+/**
+ * Returns entity glow range.
+ *
+ * @param entity        Entity index.
+ * @return              Glow range.
+ * @error               Invalid entity index or entity does not support glow.
+ */
+stock L4D2_GetEntGlow_Range(entity)
+{
+    return GetEntProp(entity, Prop_Send, "m_nGlowRange");
+}
+
+/**
+ * Returns entity glow min range.
+ *
+ * @param entity        Entity index.
+ * @return              Glow min range.
+ * @error               Invalid entity index or entity does not support glow.
+ */
+stock L4D2_GetEntGlow_MinRange(entity)
+{
+    return GetEntProp(entity, Prop_Send, "m_nGlowRangeMin");
+}
+
+/**
+ * Returns entity glow flashing state.
+ *
+ * @param entity        Entity index.
+ * @return              Glow flashing state.
+ * @error               Invalid entity index or entity does not support glow.
+ */
+stock bool:L4D2_GetEntGlow_Flashing(entity)
+{
+    return bool:GetEntProp(entity, Prop_Send, "m_bFlashing");
+}
+
+/**
+ * Removes entity glow.
+ *
+ * @param entity        Entity index.
+ * @return              True if glow was removed, false if entity does not
+ *                      support glow or entity have no glow set.
+ */
+stock bool:L4D2_RemoveEntGlow(entity)
+{
+    if (!IsValidEntity(entity)) return false;
+
+    decl String:netclass[128];
+    GetEntityNetClass(entity, netclass, 128);
+
+    new offset = FindSendPropInfo(netclass, "m_iGlowType");
+    if (offset < 1)
+    {
+        return false;    
+    }
+
+    L4D2_SetEntGlow_Type(entity, L4D2Glow_None);
+    return true;
+}
+
+/**
+ * Removes entity glow override color.
+ *
+ * @param entity        Entity index.
+ * @noreturn
+ * @error               Invalid entity index or entity does not support glow.
+ */
+stock L4D2_RemoveEntGlow_ColorOVRD(entity)
+{
+    L4D2_SetEntGlow_ColorOverride(entity, {0, 0, 0});
+}
+
+/**
+ * Whether survivor glow for player is enabled.
  *
  * @param client        Client index.
  * @return              True if survivor glow is enabled, false otherwise.
  * @error               Invalid client index.
  */
-stock bool:L4D2_GetPlayerSurvivorGlow(client)
+stock bool:L4D2_IsPlayerSurvivorGlowEnable(client)
 {
     return bool:GetEntProp(client, Prop_Send, "m_bSurvivorGlowEnabled");
 }
 
 /**
- * Set player's survivor glow active state.
+ * Set survivor glow state for player.
  *
  * @param client        Client index.
  * @param enabled       Whether survivor glow is enabled.
  * @noreturn
  * @error               Invalid client index.
  */
-stock L4D2_SetPlayerSurvivorGlow(client, bool:enabled)
+stock L4D2_SetPlayerSurvivorGlowState(client, bool:enabled)
 {
     SetEntProp(client, Prop_Send, "m_bSurvivorGlowEnabled", _:enabled);
 }
