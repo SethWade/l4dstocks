@@ -1,28 +1,29 @@
 /**
  * =============================================================================
- * Left 4 Dead Stocks Library (C)2011 Buster "Mr. Zero" Nielsen
+ * Left 4 Dead Stocks Library (C)2011-2012 Buster "Mr. Zero" Nielsen
  * =============================================================================
  *
- * This program is free software; you can redistribute it and/or modify it under
- * the terms of the GNU General Public License, version 3.0, as published by the
- * Free Software Foundation.
+ * This program is free software; you can redistribute it and/or modify it 
+ * under the terms of the GNU General Public License, version 3.0, as 
+ * published by the Free Software Foundation.
  * 
  * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
- * FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more
- * details.
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or 
+ * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+ * more details.
  *
- * You should have received a copy of the GNU General Public License along with
- * this program.  If not, see <http://www.gnu.org/licenses/>.
+ * You should have received a copy of the GNU General Public License along 
+ * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * As a special exception, AlliedModders LLC gives you permission to link the
- * code of this program (as well as its derivative works) to "Half-Life 2," the
- * "Source Engine," the "SourcePawn JIT," and any Game MODs that run on software
- * by the Valve Corporation.  You must obey the GNU General Public License in
- * all respects for all other code used.  Additionally, AlliedModders LLC grants
- * this exception to all derivative works.  AlliedModders LLC defines further
- * exceptions, found in LICENSE.txt (as of this writing, version JULY-31-2007),
- * or <http://www.sourcemod.net/license.php>.
+ * code of this program (as well as its derivative works) to "Half-Life 2,"
+ * the "Source Engine," the "SourcePawn JIT," and any Game MODs that run on 
+ * software by the Valve Corporation.  You must obey the GNU General Public
+ * License in all respects for all other code used.  Additionally, 
+ * AlliedModders LLC grants this exception to all derivative works.  
+ * AlliedModders LLC defines further exceptions, found in LICENSE.txt 
+ * (as of this writing, version JULY-31-2007), or 
+ * <http://www.sourcemod.net/license.php>.
  */
 
 #if defined _l4d_stocks_included
@@ -64,6 +65,12 @@
 #define L4D2_IHFLAG_SHAKE_NARROW        (1 << 6)
 #define L4D2_IHFLAG_SHAKE_WIDE          (1 << 7)
 #define L4D2_IHFLAG_STATIC              (1 << 8)
+
+/* Survivor intensity -- Equal or less */
+#define L4D_SURVIVORINTENSITY_MILD      0.25
+#define L4D_SURVIVORINTENSITY_MODERATE  0.50
+#define L4D_SURVIVORINTENSITY_HIGH      0.75
+#define L4D_SURVIVORINTENSITY_EXTREME   1.00
 
 enum L4DTeam
 {
@@ -237,7 +244,7 @@ stock L4D_GetPlayerGhostSpawnState(client)
 /**
  * Set zombie player's ghost spawn state bits.
  *
- * Note: The game overwrites spawn state bits every frame.
+ * Note: The game updates spawn state bits every frame.
  *
  * @param client        Player index.
  * @param bits          Ghost spawn state bits.
@@ -369,27 +376,34 @@ stock bool:L4D_IsPlayerIdle(client)
 stock L4D_GetBotOfIdlePlayer(client)
 {
     new idleClient;
+    new offset;
     decl String:netclass[128];
 
-    for (new i = 1; i <= MaxClients; i++)
+    for (new bot = 1; bot <= MaxClients; bot++)
     {
-        if (!IsClientInGame(i) || 
-            !IsFakeClient(i) ||
-            L4DTeam:GetClientTeam(i) != L4DTeam_Survivor ||
-            !IsPlayerAlive(i) ||
-            GetClientHealth(i) < 1)
+        if (!IsClientInGame(bot) || 
+            !IsFakeClient(bot) ||
+            L4DTeam:GetClientTeam(bot) != L4DTeam_Survivor ||
+            !IsPlayerAlive(bot) ||
+            GetClientHealth(bot) < 1)
         {
             continue;
         }
 
-        GetEntityNetClass(i, netclass, 128);
-        if (FindSendPropInfo(netclass, "m_humanSpectatorUserID") < 1)
+        GetEntityNetClass(bot, netclass, 128);
+        offset = FindSendPropInfo(netclass, "m_humanSpectatorUserID");
+
+        if (offset < 1)
         {
             continue;
         }
 
-        idleClient = GetClientOfUserId(GetEntProp(i, Prop_Send, "m_humanSpectatorUserID"));
-        if (idleClient == client) return i;
+        idleClient = GetClientOfUserId(GetEntProp(bot, Prop_Send, "m_humanSpectatorUserID"));
+
+        if (idleClient == client)
+        {
+            return bot;
+        }
     }
 
     return -1;
@@ -522,6 +536,10 @@ stock L4D_RemoveAllWeapons(client)
 /**
  * Returns whether the finale is active.
  *
+ * Note: Finales can also be on other maps than just the finale map. A perfect
+ * example of this is the Swamp Fever map 1 crescendo event. This event is 
+ * defined as a finale by Valve for some reason.
+ *
  * @return              True if finale is active, false otherwise.
  */
 stock bool:L4D_IsFinaleActive()
@@ -584,24 +602,28 @@ stock L4D_GetPendingTankPlayer()
  * @return              True if glow was set, false if entity does not support
  *                      glow.
  */
-stock bool:L4D2_SetEntGlow(entity, L4D2GlowType:type, range, minRange, colorOverride[3], bool:flashing)
+stock bool:L4D2_SetEntityGlow(entity, L4D2GlowType:type, range, minRange, colorOverride[3], bool:flashing)
 {
-    if (!IsValidEntity(entity)) return false;
+    if (!IsValidEntity(entity))
+    {
+        return false;
+    }
 
     decl String:netclass[128];
     GetEntityNetClass(entity, netclass, 128);
 
     new offset = FindSendPropInfo(netclass, "m_iGlowType");
+
     if (offset < 1)
     {
         return false;    
     }
 
-    L4D2_SetEntGlow_Type(entity, type);
-    L4D2_SetEntGlow_Range(entity, range);
-    L4D2_SetEntGlow_MinRange(entity, minRange);
-    L4D2_SetEntGlow_ColorOverride(entity, colorOverride);
-    L4D2_SetEntGlow_Flashing(entity, flashing);
+    L4D2_SetEntityGlow_Type(entity, type);
+    L4D2_SetEntityGlow_Range(entity, range);
+    L4D2_SetEntityGlow_MinRange(entity, minRange);
+    L4D2_SetEntityGlow_Color(entity, colorOverride);
+    L4D2_SetEntityGlow_Flashing(entity, flashing);
     return true;
 }
 
@@ -613,7 +635,7 @@ stock bool:L4D2_SetEntGlow(entity, L4D2GlowType:type, range, minRange, colorOver
  * @noreturn
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_SetEntGlow_Type(entity, L4D2GlowType:type)
+stock L4D2_SetEntityGlow_Type(entity, L4D2GlowType:type)
 {
     SetEntProp(entity, Prop_Send, "m_iGlowType", _:type);
 }
@@ -626,7 +648,7 @@ stock L4D2_SetEntGlow_Type(entity, L4D2GlowType:type)
  * @noreturn
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_SetEntGlow_Range(entity, range)
+stock L4D2_SetEntityGlow_Range(entity, range)
 {
     SetEntProp(entity, Prop_Send, "m_nGlowRange", range);
 }
@@ -639,7 +661,7 @@ stock L4D2_SetEntGlow_Range(entity, range)
  * @noreturn
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_SetEntGlow_MinRange(entity, minRange)
+stock L4D2_SetEntityGlow_MinRange(entity, minRange)
 {
     SetEntProp(entity, Prop_Send, "m_nGlowRangeMin", minRange);
 }
@@ -652,7 +674,7 @@ stock L4D2_SetEntGlow_MinRange(entity, minRange)
  * @noreturn
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_SetEntGlow_ColorOverride(entity, colorOverride[3])
+stock L4D2_SetEntityGlow_Color(entity, colorOverride[3])
 {
     SetEntProp(entity, Prop_Send, "m_glowColorOverride", colorOverride[0] + (colorOverride[1] * 256) + (colorOverride[2] * 65536));
 }
@@ -665,7 +687,7 @@ stock L4D2_SetEntGlow_ColorOverride(entity, colorOverride[3])
  * @noreturn
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_SetEntGlow_Flashing(entity, bool:flashing)
+stock L4D2_SetEntityGlow_Flashing(entity, bool:flashing)
 {
     SetEntProp(entity, Prop_Send, "m_bFlashing", _:flashing);
 }
@@ -677,7 +699,7 @@ stock L4D2_SetEntGlow_Flashing(entity, bool:flashing)
  * @return              L4D2 glow type.
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2GlowType:L4D2_GetEntGlow_Type(entity)
+stock L4D2GlowType:L4D2_GetEntityGlow_Type(entity)
 {
     return L4D2GlowType:GetEntProp(entity, Prop_Send, "m_iGlowType");
 }
@@ -689,7 +711,7 @@ stock L4D2GlowType:L4D2_GetEntGlow_Type(entity)
  * @return              Glow range.
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_GetEntGlow_Range(entity)
+stock L4D2_GetEntityGlow_Range(entity)
 {
     return GetEntProp(entity, Prop_Send, "m_nGlowRange");
 }
@@ -701,7 +723,7 @@ stock L4D2_GetEntGlow_Range(entity)
  * @return              Glow min range.
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_GetEntGlow_MinRange(entity)
+stock L4D2_GetEntityGlow_MinRange(entity)
 {
     return GetEntProp(entity, Prop_Send, "m_nGlowRangeMin");
 }
@@ -713,7 +735,7 @@ stock L4D2_GetEntGlow_MinRange(entity)
  * @return              Glow flashing state.
  * @error               Invalid entity index or entity does not support glow.
  */
-stock bool:L4D2_GetEntGlow_Flashing(entity)
+stock bool:L4D2_GetEntityGlow_Flashing(entity)
 {
     return bool:GetEntProp(entity, Prop_Send, "m_bFlashing");
 }
@@ -725,33 +747,40 @@ stock bool:L4D2_GetEntGlow_Flashing(entity)
  * @return              True if glow was removed, false if entity does not
  *                      support glow or entity have no glow set.
  */
-stock bool:L4D2_RemoveEntGlow(entity)
+stock bool:L4D2_RemoveEntityGlow(entity)
 {
-    if (!IsValidEntity(entity)) return false;
+    if (!IsValidEntity(entity))
+    {
+        return false;
+    }
 
     decl String:netclass[128];
     GetEntityNetClass(entity, netclass, 128);
 
     new offset = FindSendPropInfo(netclass, "m_iGlowType");
+
     if (offset < 1)
     {
         return false;    
     }
 
-    L4D2_SetEntGlow_Type(entity, L4D2Glow_None);
+    L4D2_SetEntityGlow_Type(entity, L4D2Glow_None);
     return true;
 }
 
 /**
  * Removes entity glow override color.
  *
+ * Note: This only removes the override color and reset it to the default glow
+ * color.
+ *
  * @param entity        Entity index.
  * @noreturn
  * @error               Invalid entity index or entity does not support glow.
  */
-stock L4D2_RemoveEntGlow_ColorOVRD(entity)
+stock L4D2_RemoveEntityGlow_Color(entity)
 {
-    L4D2_SetEntGlow_ColorOverride(entity, {0, 0, 0});
+    L4D2_SetEntityGlow_Color(entity, {0, 0, 0});
 }
 
 /**
@@ -832,18 +861,19 @@ stock Float:L4D_GetAvgSurvivorIntensity()
 {
     new intensityTotal = 0;
     new intensityMaxTotal = 0;
-    for (new i = 1; i <= MaxClients; i++)
+
+    for (new client = 1; client <= MaxClients; client++)
     {
-        if (!IsClientInGame(i) ||
-            L4DTeam:GetClientTeam(i) != L4DTeam_Survivor ||
-            !IsPlayerAlive(i) ||
-            GetClientHealth(i) < 1)
+        if (!IsClientInGame(client) ||
+            L4DTeam:GetClientTeam(client) != L4DTeam_Survivor ||
+            !IsPlayerAlive(client) ||
+            GetClientHealth(client) < 1)
         {
             continue;
         }
 
         intensityMaxTotal += 100;
-        intensityTotal += GetEntProp(i, Prop_Send, "m_clientIntensity");
+        intensityTotal += GetEntProp(client, Prop_Send, "m_clientIntensity");
     }
 
     /* This format is used to keep consistency with the Director which also
@@ -870,7 +900,7 @@ stock L4D_SetPlayerIntensity(client, Float:intensity)
  * Returns whether player is calm.
  *
  * Note: Player is calm means that the player have not taken damage or
- * fired their weapon for a while.
+ * fired their weapon for a while. Survivor bots always return false.
  *
  * @param client        Client index.
  * @return              True if player is calm, false otherwise.
@@ -1032,22 +1062,37 @@ stock L4D2_GetInfectedAttacker(client)
 
     /* Charger */
     attacker = GetEntPropEnt(client, Prop_Send, "m_pummelAttacker");
-    if (attacker > 0) return attacker;
+    if (attacker > 0)
+    {
+        return attacker;
+    }
 
     attacker = GetEntPropEnt(client, Prop_Send, "m_carryAttacker");
-    if (attacker > 0) return attacker;
+    if (attacker > 0)
+    {
+        return attacker;
+    }
 
     /* Hunter */
     attacker = GetEntPropEnt(client, Prop_Send, "m_pounceAttacker");
-    if (attacker > 0) return attacker;
+    if (attacker > 0)
+    {
+        return attacker;
+    }
 
     /* Smoker */
     attacker = GetEntPropEnt(client, Prop_Send, "m_tongueOwner");
-    if (attacker > 0) return attacker;
+    if (attacker > 0)
+    {
+        return attacker;
+    }
 
     /* Jockey */
     attacker = GetEntPropEnt(client, Prop_Send, "m_jockeyAttacker");
-    if (attacker > 0) return attacker;
+    if (attacker > 0)
+    {
+        return attacker;
+    }
 
     return -1;
 }
@@ -1068,22 +1113,37 @@ stock L4D2_GetSurvivorVictim(client)
 
     /* Charger */
     victim = GetEntPropEnt(client, Prop_Send, "m_pummelVictim");
-    if (victim > 0) return victim;
+    if (victim > 0)
+    {
+        return victim;
+    }
 
     victim = GetEntPropEnt(client, Prop_Send, "m_carryVictim");
-    if (victim > 0) return victim;
+    if (victim > 0)
+    {
+        return victim;
+    }
 
     /* Hunter */
     victim = GetEntPropEnt(client, Prop_Send, "m_pounceVictim");
-    if (victim > 0) return victim;
+    if (victim > 0)
+    {
+        return victim;
+    }
 
     /* Smoker */
     victim = GetEntPropEnt(client, Prop_Send, "m_tongueVictim");
-    if (victim > 0) return victim;
+    if (victim > 0)
+    {
+        return victim;
+    }
 
     /* Jockey */
     victim = GetEntPropEnt(client, Prop_Send, "m_jockeyVictim");
-    if (victim > 0) return victim;
+    if (victim > 0)
+    {
+        return victim;
+    }
 
     return -1;
 }
@@ -1225,6 +1285,13 @@ stock L4D2_GetPlayerUseActionOwner(client)
  * @param range         Display range of hint. 0 for unlimited range.
  * @param timeout       Timeout out for hint. 0 will persist until stopped
  *                      with L4D2_EndInstructorHint.
+ * @param allowNoDrawTarget Whether hint will work with targets that have 
+ *                      nodraw set.
+ * @param noOffScreen   Whether when hint is off screen it will show an arrow 
+ *                      pointing to target.
+ * @param forceCaption  Whether the hint and icon will show even when occluded
+ *                      a wall.
+ * @param flags         Instructor hint bit flags. See L4D2_IHFLAG_* defines.
  * @return              True if send, false otherwise.
  */
 stock bool:L4D2_CreateInstructorHint(const String:name[], 
