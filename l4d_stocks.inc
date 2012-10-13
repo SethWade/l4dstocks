@@ -928,6 +928,23 @@ stock L4D_SetPlayerCalmState(client, bool:isCalm)
 }
 
 /**
+ * Returns whether player has visible threats.
+ *
+ * Note: This function only works on Survivors. Survivors looking upon
+ * specials, witch or tank will be marked as has visisble threats. However
+ * looking at commons will not be seen as has visible threats. The common has
+ * to be awkaen from its slumber before beings seen as a threat.
+ *
+ * @parma client        Client index.
+ * @return              True if player has visible threats, false otherwise.
+ * @error               Invalid client index.
+ */
+stock bool:L4D_HasVisibleThreats(client)
+{
+    return bool:GetEntProp(client, Prop_Send, "m_hasVisibleThreats");
+}
+
+/**
  * Returns whether player is on third strike.
  *
  * @param client        Client index.
