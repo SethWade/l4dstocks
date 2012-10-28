@@ -418,6 +418,15 @@ stock L4D_GetBotOfIdlePlayer(client)
  */
 stock L4D_GetIdlePlayerOfBot(bot)
 {
+    decl String:netclass[128];
+    GetEntityNetClass(bot, netclass, 128);
+    new offset = FindSendPropInfo(netclass, "m_humanSpectatorUserID");
+
+    if (offset < 1)
+    {
+        return 0;
+    }
+
     return GetClientOfUserId(GetEntProp(bot, Prop_Send, "m_humanSpectatorUserID"));
 }
 
