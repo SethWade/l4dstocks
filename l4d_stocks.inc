@@ -1403,3 +1403,24 @@ stock L4D1_SetShotgunNeedPump(weapon, bool:needPump)
 {
     return SetEntProp(weapon, Prop_Send, "m_needPump", _:needPump);
 }
+
+/**
+ * Sets custom ability cooldown of client.
+ *
+ * Note: Used for the Infected class abilities.
+ *
+ * @param client        Client index.
+ * @param time          How long before client can use their custom ability.
+ * @return              True if set, false if no ability found.
+ */
+stock bool:L4D2_SetCustomAbilityCooldown(client, Float:time)
+{
+    new ability = GetEntPropEnt(client, Prop_Send, "m_customAbility");
+    if (ability > 0 && IsValidEdict(ability))
+    {
+        SetEntPropFloat(ability, Prop_Send, "m_duration", time);
+        SetEntPropFloat(ability, Prop_Send, "m_timestamp", GetGameTime() + time);
+        return true;
+    }
+    return false;
+}
