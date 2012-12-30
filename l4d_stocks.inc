@@ -413,7 +413,7 @@ stock L4D_GetBotOfIdlePlayer(client)
  * Returns idle survivor player of survivor bot.
  *
  * @param bot           Player index of bot.
- * @return              Player index of idle client, 0 if not found.
+ * @return              Player index of idle client, -1 if not found.
  * @error               Invalid client index.
  */
 stock L4D_GetIdlePlayerOfBot(bot)
@@ -424,7 +424,7 @@ stock L4D_GetIdlePlayerOfBot(bot)
 
     if (offset < 1)
     {
-        return 0;
+        return -1;
     }
 
     return GetClientOfUserId(GetEntProp(bot, Prop_Send, "m_humanSpectatorUserID"));
