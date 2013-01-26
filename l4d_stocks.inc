@@ -754,27 +754,11 @@ stock bool:L4D2_GetEntityGlow_Flashing(entity)
  *
  * @param entity        Entity index.
  * @return              True if glow was removed, false if entity does not
- *                      support glow or entity have no glow set.
+ *                      support glow.
  */
 stock bool:L4D2_RemoveEntityGlow(entity)
 {
-    if (!IsValidEntity(entity))
-    {
-        return false;
-    }
-
-    decl String:netclass[128];
-    GetEntityNetClass(entity, netclass, 128);
-
-    new offset = FindSendPropInfo(netclass, "m_iGlowType");
-
-    if (offset < 1)
-    {
-        return false;    
-    }
-
-    L4D2_SetEntityGlow_Type(entity, L4D2Glow_None);
-    return true;
+    return L4D2_SetEntityGlow(entity, L4D2Glow_None, 0, 0, { 0, 0, 0 }, false);
 }
 
 /**
@@ -789,7 +773,7 @@ stock bool:L4D2_RemoveEntityGlow(entity)
  */
 stock L4D2_RemoveEntityGlow_Color(entity)
 {
-    L4D2_SetEntityGlow_Color(entity, {0, 0, 0});
+    L4D2_SetEntityGlow_Color(entity, { 0, 0, 0 });
 }
 
 /**

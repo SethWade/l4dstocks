@@ -325,10 +325,9 @@ stock L4D2WeaponId:L4D2_GetWeaponId(weapon)
     if(len - 6 > 0 && StrEqual(classname[len - 6], "_spawn"))
     {
         classname[len - 6] = '\0';
-        return L4D2_GetWeaponIdByWeaponName(classname);
     }
 
-    return L4D2WeaponId_None;
+    return L4D2_GetWeaponIdByWeaponName(classname);
 }
 
 /**
