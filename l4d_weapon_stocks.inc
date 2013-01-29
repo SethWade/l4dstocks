@@ -153,7 +153,7 @@ static const String:L4D2WeaponName[L4D2WeaponId][] =
     "choke",                            // 51
     "rock",                             // 52
     "physics",                          // 53
-    "ammo",                             // 54
+    "weapon_ammo",                      // 54
     "upgrade_item"                      // 55
 };
 
@@ -311,14 +311,14 @@ stock bool:L4D2_GetWeaponNameByWeaponId(L4D2WeaponId:weaponId, String:dest[], le
 stock L4D2WeaponId:L4D2_GetWeaponId(weapon)
 {
     decl String:classname[64];
-    if (!GetEdictClassname(entity, classname, sizeof(classname)))
+    if (!GetEdictClassname(weapon, classname, sizeof(classname)))
     {
         return L4D2WeaponId_None;
     }
 
     if (StrEqual(classname, "weapon_spawn"))
     {
-        return L4D2WeaponId:GetEntProp(entity, Prop_Send, "m_weaponID");
+        return L4D2WeaponId:GetEntProp(weapon, Prop_Send, "m_weaponID");
     }
 
     new len = strlen(classname);
