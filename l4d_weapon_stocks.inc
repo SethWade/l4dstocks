@@ -271,6 +271,47 @@ stock bool:L4D2_HasValidWeaponWorldModel(L4D2WeaponId:weaponId)
 }
 
 /**
+ * Returns weapon world model by weapon id.
+ *
+ * @note Does not work with melee weapons.
+ *
+ * @param weaponId      Weapon id.
+ * @param dest          Destination string buffer to copy to.
+ * @param destlen       Destination buffer length (includes null terminator).
+ * @return              Number of cells written.
+ */
+stock L4D2_GetWeaponModelByWeaponId(L4D2WeaponId:weaponId, String:dest[], destlen)
+{
+    if (!L4D2_IsValidWeaponId(weaponId))
+    {
+        return 0;
+    }
+
+    return strcopy(dest, destlen, L4D2WeaponWorldModel[weaponId]);
+}
+
+/**
+ * Returns weapon id by weapon world model.
+ *
+ * @note Does not work with melee weapons.
+ *
+ * @param model         Weapon world model.
+ * @return              Weapon Id.
+ */
+stock L4D2WeaponId:L4D2_GetWeaponIdByWeaponModel(const String:model[])
+{
+    for (new i = 0; i < sizeof(L4D2WeaponWorldModel); i++)
+    {
+        if (StrEqual(model, L4D2WeaponWorldModel[i], false))
+        {
+            return L4D2WeaponId:i;
+        }
+    }
+
+    return L4D2WeaponId_None;
+}
+
+/**
  * Returns weapon id by weapon name.
  *
  * @param weaponName    Weapon name to get id from.
@@ -288,17 +329,18 @@ stock L4D2WeaponId:L4D2_GetWeaponIdByWeaponName(const String:weaponName[])
  * Returns weapon name by weapon id.
  *
  * @param weaponName    Weapon id to get name from.
- * @return              True if found, false otherwise.
+ * @param dest          Destination string buffer to copy to.
+ * @param destlen       Destination buffer length (includes null terminator).
+ * @return              Number of cells written.
  */
-stock bool:L4D2_GetWeaponNameByWeaponId(L4D2WeaponId:weaponId, String:dest[], len)
+stock L4D2_GetWeaponNameByWeaponId(L4D2WeaponId:weaponId, String:dest[], destlen)
 {
     if (!L4D2_IsValidWeaponId(weaponId))
     {
-        return false;
+        return 0;
     }
 
-    strcopy(dest, len, L4D2WeaponName[weaponId]);
-    return true;
+    return strcopy(dest, destlen, L4D2WeaponName[weaponId]);
 }
 
 /**
